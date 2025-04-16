@@ -3,35 +3,59 @@ import Image from "next/image";
 import { useReadContract } from "wagmi";
 import { FundModal } from "./FundModal";
 import { formatEther } from "viem";
+import { useEffect, useState } from "react";
+import { contract } from "@/constants/contract";
 
 interface CampaignDetailProps {
   id: number;
 }
 
+interface CampaignDetails {
+  fundraiser: string;
+  title: string;
+  description: string;
+  image: string;
+  targetAmount: string;
+  totalFunded: string;
+  totalWithdrawn: string;
+  status: string;
+}
+
 export const CampaignDetail = ({ id }: CampaignDetailProps) => {
+  const [mounted, setMounted] = useState(false);
+  const [campaignDetails, setCampaignDetails] =
+    useState<CampaignDetails | null>(null);
+
   const { data, isLoading, isError } = useReadContract({
-    address: "0xC13B4C26bAE6042253a5ac11d43c642Bf8dDC4c6",
+    address: contract,
     abi: abi,
     functionName: "campaigns",
     args: [BigInt(id)],
   });
 
+  useEffect(() => {
+    setMounted(true);
+    if (data) {
+      setCampaignDetails({
+        fundraiser: data[0],
+        title: data[1],
+        description: data[2],
+        image: data[3],
+        targetAmount: data[4].toString(),
+        totalFunded: formatEther(data[5]),
+        totalWithdrawn: data[6].toString(),
+        status: data[7].toString(),
+      });
+    }
+  }, [data]);
+
+  if (!mounted) {
+    return null;
+  }
+
   if (isLoading) return <p>Loading...</p>;
-
   if (isError) return <p>Error fetching data.</p>;
-
-  if (!data) return <p>No data found.</p>;
-
-  const campaignDetails = {
-    fundraiser: data[0],
-    title: data[1],
-    description: data[2],
-    image: data[3],
-    targetAmount: data[4].toString(),
-    totalFunded: formatEther(data[5]),
-    totalWithdrawn: data[6].toString(),
-    status: data[7].toString(), // Convert enum value as needed
-  };
+  if (!campaignDetails) return <p>No data found.</p>;
 
   const progress =
     (Number(campaignDetails.totalFunded) /

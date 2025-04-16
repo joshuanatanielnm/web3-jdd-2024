@@ -1,6 +1,7 @@
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { FormEvent, useEffect, useState } from "react";
 import abi from "@/constants/abi";
+import { contract } from "@/constants/contract";
 
 export function CreateCampaign() {
   const { data: hash, writeContract } = useWriteContract();
@@ -29,7 +30,7 @@ export function CreateCampaign() {
     e.preventDefault();
     try {
       writeContract({
-        address: "0xC13B4C26bAE6042253a5ac11d43c642Bf8dDC4c6",
+        address: contract,
         abi: abi,
         functionName: "createCampaign",
         args: [title, description, image, BigInt(targetAmount)],
@@ -39,6 +40,7 @@ export function CreateCampaign() {
       console.error("Error creating campaign:", error);
     }
   };
+
   return (
     <div className="container mx-auto mt-12">
       <form className="flex flex-col" onSubmit={handleSubmit}>

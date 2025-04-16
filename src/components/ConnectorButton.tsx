@@ -8,15 +8,21 @@ export function ConnectorButton({
   connector: Connector;
   onClick: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const init = async () => {
       const provider = await connector.getProvider();
       setReady(!!provider);
     };
     init();
-  }, [connector, setReady]);
+  }, [connector]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <button disabled={!ready} onClick={onClick} type="button">

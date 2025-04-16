@@ -1,24 +1,36 @@
 import abi from "@/constants/abi";
 import { useReadContract } from "wagmi";
 import { CampaignDetail } from "./CampaignDetail";
+import { contract } from "@/constants/contract";
+import { useEffect, useState } from "react";
 
 export const Campaigns = () => {
-  const numberToArray = (num: number) => {
-    return Array.from({ length: num }, (_, i) => i + 1);
-  };
+  const [mounted, setMounted] = useState(false);
+  const [arrayData, setArrayData] = useState<number[]>([]);
+
   const { data: campaignCount } = useReadContract({
-    address: "0xC13B4C26bAE6042253a5ac11d43c642Bf8dDC4c6",
+    address: contract,
     abi: abi,
     functionName: "campaignCount",
   });
 
-  const arrayData = campaignCount ? numberToArray(Number(campaignCount)) : [];
-  console.log(arrayData, "arrayData");
+  useEffect(() => {
+    setMounted(true);
+    if (campaignCount) {
+      setArrayData(
+        Array.from({ length: Number(campaignCount) }, (_, i) => i + 1)
+      );
+    }
+  }, [campaignCount]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="mt-4 ">
       <h2 className="font-bold text-xl mt-8 mb-4">Campaigns</h2>
-      <p>There are {campaignCount} campaigns</p>
+      <p>There are {campaignCount?.toString() || "0"} campaigns</p>
       <div className="flex flex-wrap gap-4 justify-between mt-2">
         {arrayData.map((id) => (
           <CampaignDetail key={id} id={id} />
